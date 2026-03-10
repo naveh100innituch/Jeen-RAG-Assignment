@@ -27,7 +27,7 @@ This project implements a high-performance **RAG (Retrieval-Augmented Generation
 - **PostgreSQL**: Ensure PostgreSQL is installed and the `pgvector` extension is enabled.
 - **Google AI API Key**: Generate a key from [Google AI Studio](https://aistudio.google.com/).
 
-### 2. Clone and Install
+### 2. Clone, Install and usage
 ```bash
 # Clone the repository
 git clone <your-repository-url>
