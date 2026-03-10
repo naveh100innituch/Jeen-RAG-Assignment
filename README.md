@@ -5,7 +5,7 @@ This project implements a high-performance **RAG (Retrieval-Augmented Generation
 ---
 
 ## Key Features
-- **PDF Text Extraction**: Efficiently extracts and cleans text from PDF files.
+- **PDF or DOCX Text Extraction**: Efficiently extracts and cleans text from PDF or DOCX files.
 - **Smart Semantic Chunking**: Implements a paragraph-based splitting strategy to ensure each chunk maintains its original context.
 - **High-Dimensional Embeddings**: Utilizes Google's `gemini-embedding-001` model (3072 dimensions) for superior semantic representation.
 - **Vector Database**: Integrated with PostgreSQL and the `pgvector` extension for fast similarity searches using Cosine Distance.
