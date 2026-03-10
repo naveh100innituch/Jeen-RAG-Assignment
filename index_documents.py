@@ -49,45 +49,70 @@ def extract_text(file_path):
         print(f"Error extracting text from {file_path}: {e}")
         return ""
 
-def chunk_text(text, strategy="paragraph", chunk_size=500, overlap=50):
+import re
+
+def chunk_text(text, strategy="paragraph", chunk_size=800, overlap=100):
     """
-    Splits text into chunks based on one of three strategies:
-    1. Fixed-size with overlap
-    2. Sentence-based splitting
-    3. Paragraph-based splitting
+    Splits the input text into manageable segments (chunks) based on a selected strategy.
     
+    This function performs initial text normalization to handle inconsistent whitespace 
+    and line breaks often found in PDF extractions. It ensures that the resulting 
+    chunks are contextually rich for high-quality vector embeddings.
+
     Args:
-        text (str): Raw text to split.
-        strategy (str): 'fixed', 'sentence', or 'paragraph'.
-        chunk_size (int): Max characters for 'fixed' strategy.
-        overlap (int): Overlap characters for 'fixed' strategy.
-        
+        text (str): The raw text extracted from the source document.
+        strategy (str): The splitting logic to apply. Options are:
+            - 'fixed': Creates chunks of a specific character length with overlap.
+            - 'sentence': Splits text at sentence boundaries using regex.
+            - 'paragraph': Groups text into logical blocks (default for RAG).
+        chunk_size (int): The maximum character length for the 'fixed' strategy.
+        overlap (int): The number of characters to overlap between adjacent fixed-size 
+            chunks to maintain semantic continuity.
+
     Returns:
-        list: A list of text chunks.
+        list[str]: A list of text chunks ready for embedding.
     """
     if not text:
         return []
 
+    # Text Normalization:
+    # Replaces multiple whitespace characters and newlines with a single space.
+    # This is critical for PDFs where sentences may be broken across multiple lines.
+    normalized_text = " ".join(text.split())
+
     chunks = []
 
+    # Strategy 1: Fixed-size with Overlap
+    # Ideal for keyword-heavy documents where context is evenly distributed.
     if strategy == "fixed":
-        # Strategy: Fixed-size with overlap
         start = 0
-        while start < len(text):
+        while start < len(normalized_text):
             end = start + chunk_size
-            chunks.append(text[start:end].strip())
+            chunk = normalized_text[start:end].strip()
+            if chunk:
+                chunks.append(chunk)
+            # Advance the pointer by (size - overlap) to maintain continuity
             start += (chunk_size - overlap)
+            # Prevent infinite loops if overlap settings are misconfigured
+            if overlap >= chunk_size: break
 
+    # Strategy 2: Sentence-based Splitting
+    # Uses regular expressions to identify end-of-sentence punctuation (. ! ?)
+    # followed by a space, ensuring that chunks do not break mid-sentence.
     elif strategy == "sentence":
-        # Strategy: Sentence-based splitting
-        # Uses regex to split by punctuation followed by whitespace
-        sentences = re.split(r'(?<=[.!?])\s+', text)
+        sentences = re.split(r'(?<=[.!?])\s+', normalized_text)
         chunks = [s.strip() for s in sentences if len(s.strip()) > 10]
 
+    # Strategy 3: Paragraph-based Splitting
+    # For normalized text, this creates logical blocks of text (approx. 800 chars).
+    # This maintains the best balance between context and embedding efficiency.
     elif strategy == "paragraph":
-        # Strategy: Paragraph-based splitting
-        paragraphs = text.split('\n')
-        chunks = [p.strip() for p in paragraphs if len(p.strip()) > 20]
+        # Logical block size for semantic grouping
+        block_size = 800 
+        for i in range(0, len(normalized_text), block_size):
+            chunk = normalized_text[i:i + block_size].strip()
+            if len(chunk) > 20:
+                chunks.append(chunk)
 
     return chunks
 
@@ -152,6 +177,7 @@ if __name__ == "__main__":
     chosen_strategy = "paragraph" # Options: "fixed", "sentence", "paragraph"
     
     print(f"--- Starting Pipeline for: {file_name} ---")
+    
     
     # Extract
     raw_text = extract_text(file_name)
