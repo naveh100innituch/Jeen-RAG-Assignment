@@ -42,13 +42,13 @@ GEMINI_API_KEY=your_actual_api_key_here
 POSTGRES_URL=postgresql://postgres:password@localhost:5432/postgres
 
 ## Database Initialization
-Run the following SQL commands in your pgAdmin Query Tool to set up the vector-enabled table
-CREATE EXTENSION IF NOT EXISTS vector;
+*Run the following SQL commands in your pgAdmin Query Tool to set up the vector-enabled table*
+DROP TABLE IF EXISTS document_vectors;
 
 CREATE TABLE document_vectors (
     id SERIAL PRIMARY KEY,
     chunk_text TEXT,
-    embedding VECTOR(3072), -- Optimized for gemini-embedding-001
+    embedding VECTOR(3072),
     filename TEXT,
     strategy_split TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -75,4 +75,4 @@ python test_search.py
  SELECT count(*) FROM document_vectors;
 
 *Review content:*
- SELECT chunk_text, strategy_split FROM document_vectors LIMIT 5;
+ SELECT * FROM document_vectors LIMIT 5;
